@@ -23,8 +23,16 @@ We are using Google's stock dataset.
 <code>conda install spyder</code>
 
 ## Saved Models
-* model.h5
-> input is only single attribute __"Open"__ price and predicts __"Open"__ price.
+* model.h5 and model.json   
+Input is only single attribute __"Open"__ price and predicts __"Open"__ price.
+* model1.h5 and model1.json                                                                                                                                                                                                                                           
+Input are 2 attributes __"Open" "Close"__ price and predicts __"Open"__ price.
 
-## Accuracy 
-mean_squared_error for model.h5 = 688.4141
+## Accuracy
+For test set
+* r2 score = 0.78885  
+* mse score = 316.776
+
+For train set
+* r2 score = 0.97971
+* mse score = 1563.557
