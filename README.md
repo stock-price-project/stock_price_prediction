@@ -22,5 +22,9 @@ We are using Google's stock dataset.
 * Spyder IDE  
 <code>conda install spyder</code>
 
+## Saved Models
+* model.h5
+> input is only single attribute __"Open"__ price and predicts __"Open"__ price.
+
 ## Accuracy 
 mean_squared_error for model.h5 = 688.4141
