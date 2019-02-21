@@ -4,29 +4,28 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
 
 # Importing the training set
 df = pd.read_csv('train.csv')
-training_set = df.iloc[:, 1:2].values
+# selecting open and close columns as input feature
+training_set = df.iloc[:, [1, 4]].values                # from 0 to 3421
 
 # Feature Scaling
-from sklearn.preprocessing import MinMaxScaler
 sc = MinMaxScaler(feature_range = (0,1))
 training_set_scaled = sc.fit_transform(training_set)
 
-# creating a data structure with 60 timestamp and 1 output
+# creating a data structure with 60 timestamp and predicting 1 output
 X_train = []
 y_train = []
 for i in range(60, len(training_set_scaled)):
-    X_train.append(training_set_scaled[i-60: i, 0])
-    y_train.append(training_set_scaled[i, 0])
+    X_train.append(training_set_scaled[i-60: i])     # from 0 to 3361 (open, close)
+    y_train.append(training_set_scaled[i, 0])        # from 60 to 3421 (open)
 
+# converting to numpy array
 X_train, y_train = np.array(X_train), np.array(y_train)
-
-# Reshaping
-X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], 1)
-
-
+# Reshaping to create 3D tensor
+X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], 2)
 
 ###############################################################################
 # Building the RNN
@@ -61,30 +60,31 @@ model.compile(optimizer = 'rmsprop', loss = 'mean_squared_error')
 # fitting the rnn to the training set
 model.fit(X_train, y_train, epochs = 120, batch_size = 32)
 
-
 ###############################################################################
+
 # serialize model to JSON
 model_json = model.to_json()
-with open("model.json", "w") as json_file:
+with open("model1.json", "w") as json_file:
     json_file.write(model_json)
 # serialize weights to HDF5
-model.save_weights("model.h5")
+model.save_weights("model1.h5")
 print("Saved model to disk")
 
 
 # loading the model
-json_file = open('model.json', 'r')
+json_file = open('model1.json', 'r')
 loaded_model_json = json_file.read()
 json_file.close()
 loaded_model = model_from_json(loaded_model_json)
 # load weights into new model
-loaded_model.load_weights("model.h5")
+loaded_model.load_weights("model1.h5")
 print("Loaded model from disk")
 
 ###############################################################################
+
 # importing the testing file
 test_data = pd.read_csv('test.csv')
-actual_open = test_data.iloc[:, 1:2].values
+actual_open = test_data.iloc[:, 1:2].values                 # from 0 to 102
 
 dataset_total = pd.concat((df['Open'], test_data['Open']), axis=0)
 inputs = dataset_total[len(dataset_total) - len(test_data) - 60:].values
