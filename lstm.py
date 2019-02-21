@@ -40,7 +40,7 @@ from keras.models import model_from_json
 model = Sequential()
 
 # adding the first lstm layer and some dropout regularization
-model.add(LSTM(units = X_train.shape[1], return_sequences = True, input_shape = (X_train.shape[1], 1)))
+model.add(LSTM(units = X_train.shape[1], return_sequences = True, input_shape = (X_train.shape[1], 2)))
 model.add(Dropout(0.2))
 
 model.add(LSTM(units = 100, return_sequences = True))
