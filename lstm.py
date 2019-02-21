@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 # Importing the training set
-df = pd.read_csv('GOOG.csv')
-training_set = df.iloc[:, 1:2:].values
+df = pd.read_csv('train.csv')
+training_set = df.iloc[:, 1:2].values
 
 # Feature Scaling
 from sklearn.preprocessing import MinMaxScaler
@@ -26,6 +26,9 @@ X_train, y_train = np.array(X_train), np.array(y_train)
 # Reshaping
 X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], 1)
 
+
+
+###############################################################################
 # Building the RNN
 # Importing the Keras libraries 
 from keras.models import Sequential
@@ -58,6 +61,8 @@ model.compile(optimizer = 'rmsprop', loss = 'mean_squared_error')
 # fitting the rnn to the training set
 model.fit(X_train, y_train, epochs = 120, batch_size = 32)
 
+
+###############################################################################
 # serialize model to JSON
 model_json = model.to_json()
 with open("model.json", "w") as json_file:
@@ -76,9 +81,9 @@ loaded_model = model_from_json(loaded_model_json)
 loaded_model.load_weights("model.h5")
 print("Loaded model from disk")
 
-
+###############################################################################
 # importing the testing file
-test_data = pd.read_csv('GOOG1.csv')
+test_data = pd.read_csv('test.csv')
 actual_open = test_data.iloc[:, 1:2].values
 
 dataset_total = pd.concat((df['Open'], test_data['Open']), axis=0)
@@ -129,11 +134,3 @@ plt.xlabel('time')
 plt.ylabel('google stock price')
 plt.legend()
 plt.show()
-
-
-
-
-
-
-
-
