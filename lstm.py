@@ -8,7 +8,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import r2_score, mean_squared_error
 
 # Importing the training set
-df = pd.read_csv('train.csv')
+df = pd.read_csv('./dataset/train.csv')
 # selecting open and close columns as input feature
 training_set = df.iloc[:, [1, 4]].values                # from 0 to 3421
 
@@ -84,7 +84,7 @@ print("Loaded model from disk")
 ###############################################################################
 
 # importing the testing file
-df_test = pd.read_csv('test.csv')
+df_test = pd.read_csv('./dataset/test.csv')
 actual_open = df_test.iloc[:, [1, 4]].values
 
 # feature scaling
