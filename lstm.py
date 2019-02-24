@@ -53,15 +53,15 @@ model.add(Dropout(0.2))
 model.add(LSTM(units = 40))
 model.add(Dropout(0.2))
 
-model.add(Dense(units = 1))
+model.add(Dense(units = 1, activation='sigmoid'))
 
 # compiling the rnn
-model.compile(optimizer = 'rmsprop', loss = 'mean_squared_error')
+model.compile(optimizer = 'adam', loss = 'mean_squared_error')
 
 # fitting the rnn to the training set
-model.fit(X_train, y_train, epochs = 120, batch_size = 32)
+model.fit(X_train, y_train, epochs = 50, batch_size = 32)
 
-###############################################################################
+############################################################################### 
 
 # serialize model to JSON
 model_json = model.to_json()
