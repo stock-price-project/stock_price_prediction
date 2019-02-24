@@ -23,16 +23,4 @@ We are using Google's stock dataset.
 <code>conda install spyder</code>
 
 ## Saved Models
-* model.h5 and model.json   
-Input is only single attribute __"Open"__ price and predicts __"Open"__ price.
-* model1.h5 and model1.json                                                                                                                                                                                                                                           
-Input are 2 attributes __"Open" "Close"__ price and predicts __"Open"__ price.
-
-## Accuracy
-For test set
-* r2 score = 0.78885  
-* mse score = 316.776
-
-For train set
-* r2 score = 0.97971
-* mse score = 1563.557
+A number models have been created in order to perform hyperparameter optimization. [Click here](https://github.com/stock-price-project/stock_price_prediction/tree/master/model) to see the model specification.
