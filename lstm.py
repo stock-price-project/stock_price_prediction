@@ -13,7 +13,7 @@ avg_val = pd.DataFrame((df['High'] + df['Low'])/2, columns=['Avg.val'])
 df = pd.concat([df, avg_val], axis=1)
 
 # selecting open and close columns as input feature
-training_set = df.iloc[:, [1, 4]].values                # from 0 to 3421
+training_set = df.iloc[:, [1, 4]].values             # from 0 to 3421
 
 # Feature Scaling
 sc = MinMaxScaler(feature_range = (0,1))
