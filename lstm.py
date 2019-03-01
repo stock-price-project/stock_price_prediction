@@ -12,14 +12,14 @@ df = pd.read_csv('./dataset/train.csv')
 avg_val = pd.DataFrame((df['High'] + df['Low'])/2, columns=['Avg.val'])
 df = pd.concat([df, avg_val], axis=1)
 
-# selecting open and close columns as input feature
-training_set = df.iloc[:, [1, 4]].values             # from 0 to 3421
+# selecting Open,Close,Volume and Avg.val columns as input feature
+training_set = df.iloc[:, [1, 4,6,7]].values                # from 0 to 3421
 
 # Feature Scaling
 sc = MinMaxScaler(feature_range = (0,1))
 training_set_scaled = sc.fit_transform(training_set)
 
-# creating a data structure with 60 timestamp and predicting 1 output
+# creating a data structure with 60 timesteps and predicting 1 output
 X_train = []
 y_train = []
 for i in range(60, len(training_set_scaled)):
@@ -29,9 +29,9 @@ for i in range(60, len(training_set_scaled)):
 # converting to numpy array
 X_train, y_train = np.array(X_train), np.array(y_train)
 # Reshaping to create 3D tensor
-X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], 2)
+X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], 4)
 
-###############################################################################
+
 # Building the RNN
 # Importing the Keras libraries 
 from keras.models import Sequential
@@ -44,7 +44,7 @@ from keras.models import model_from_json
 model = Sequential()
 
 # adding the first lstm layer and some dropout regularization
-model.add(LSTM(units = X_train.shape[1], return_sequences = True, input_shape = (X_train.shape[1], 2)))
+model.add(LSTM(units = X_train.shape[1], return_sequences = True, input_shape = (X_train.shape[1], 4)))
 model.add(Dropout(0.2))
 
 model.add(LSTM(units = 100, return_sequences = True))
@@ -56,39 +56,38 @@ model.add(Dropout(0.2))
 model.add(LSTM(units = 40))
 model.add(Dropout(0.2))
 
-model.add(Dense(units = 1, activation='sigmoid'))
+#model.add(Flatten())
+model.add(Dense(units = 1, activation='linear'))
 
 # compiling the rnn
-model.compile(optimizer = 'adam', loss = 'mean_squared_error')
+model.compile(optimizer = 'rmsprop', loss = 'mean_squared_error')
 
 # fitting the rnn to the training set
 model.fit(X_train, y_train, epochs = 50, batch_size = 32)
 
-############################################################################### 
-
 # serialize model to JSON
 model_json = model.to_json()
-with open("model1.json", "w") as json_file:
+with open("model.json", "w") as json_file:
     json_file.write(model_json)
 # serialize weights to HDF5
-model.save_weights("model1.h5")
+model.save_weights("model.h5")
 print("Saved model to disk")
 
 
 # loading the model
-json_file = open('model1.json', 'r')
+json_file = open('./model/linear_50_rms_4/model.json', 'r')
 loaded_model_json = json_file.read()
 json_file.close()
 loaded_model = model_from_json(loaded_model_json)
 # load weights into new model
-loaded_model.load_weights("model1.h5")
+loaded_model.load_weights("./model/linear_50_rms_4/model.h5")
 print("Loaded model from disk")
-
-###############################################################################
 
 # importing the testing file
 df_test = pd.read_csv('./dataset/test.csv')
-actual_open = df_test.iloc[:, [1, 4]].values
+avg_val_test = pd.DataFrame((df_test['High'] + df_test['Low'])/2, columns=['Avg.val'])
+df_test = pd.concat([df_test, avg_val_test], axis=1)
+actual_open = df_test.iloc[:, [1, 4,6,7]].values
 
 # feature scaling
 sc_t = MinMaxScaler(feature_range = (0,1))
@@ -103,7 +102,8 @@ for i in range(60, len(actual_open_scaled)):
 X_test = np.array(X_test)
 
 # creating 3D tensor
-X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 2))    
+X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 4))
+
 
 # performing prediction on test set
 pred_test_scaled = loaded_model.predict(X_test)
@@ -125,7 +125,7 @@ print(r2_score(actual_open[60:len(actual_open),0], pred_test))
 print(mean_squared_error(actual_open[60:len(actual_open),0], pred_test))
 
 # visualising the results for test results
-plt.plot(actual_open[60:len(actual_open),0] , color='red', label='actual stock price')
+plt.plot(actual_open[60:len(actual_open),0] , color='green', label='actual stock price')
 plt.plot(pred_test, color='blue', label='predicted stock price')
 plt.title('google stock price')
 plt.xlabel('time')
