@@ -104,14 +104,14 @@ y_test = np.array(y_test)
 # creating 3D tensor
 X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 4))
 
-loaded_model1 = []
-loaded_model2 = []
-y_test_0 = []
-y_test_1 = []
-y_train_0 = []
-y_train_1 = []
-
+loaded_model1 = Sequential()
+loaded_model2 = Sequential()
 loaded_model = [loaded_model1, loaded_model2]
+y_test_pred = []
+y_train_pred = []
+y_test_pred_rescaled = []
+y_train_pred_rescaled = []
+
 for i in range(y_test.shape[1]):
     # loading the model'
     json_pathname = "./model/model" + str(i) + ".json"
@@ -124,32 +124,28 @@ for i in range(y_test.shape[1]):
     loaded_model[i].load_weights(h5_pathname)
     print("Loaded model from disk")
     
-    
-    y_test_pred = [y_test_0, y_test_1]
     # performing prediction on test set
-    y_test_pred[i] = loaded_model[i].predict(X_test)
-    
-    y_train_pred = [y_train_0, y_train_1]
+    y_test_pred.append(loaded_model[i].predict(X_test))
     # performing prediction on train set
-    y_train_pred[i] = loaded_model[i].predict(X_train)
+    y_train_pred.append(loaded_model[i].predict(X_train))
     
     # rescaling for predictions ( test data )
     scpred = MinMaxScaler(feature_range = (0,1))
-    scpred = scpred.fit(test_set[:,0].reshape(-1,1))
-    pred_test = scpred.inverse_transform(pred_test_scaled)
+    scpred = scpred.fit(test_set[:,i].reshape(-1,1))
+    y_test_pred_rescaled.append(scpred.inverse_transform(y_test_pred[i]))
     
     # rescaling for predictions ( train data )
     scpred1 = MinMaxScaler(feature_range = (0,1))
-    scpred1 = scpred1.fit(training_set[:,0].reshape(-1,1))
-    pred_train = scpred1.inverse_transform(pred_train_scaled)
+    scpred1 = scpred1.fit(training_set[:,i].reshape(-1,1))
+    y_train_pred_rescaled.append(scpred1.inverse_transform(y_train_pred[i]))
     
     # r2 score and mse score on test data
-    print(r2_score(actual_open[60:len(actual_open),0], pred_test))
-    print(mean_squared_error(actual_open[60:len(actual_open),0], pred_test))
+    print(r2_score(test_set[60:len(test_set),i], y_test_pred_rescaled[i]))
+    print(mean_squared_error(test_set[60:len(test_set),i], y_test_pred_rescaled[i]))
     
     # visualising the results for test results
-    plt.plot(actual_open[60:len(actual_open),0] , color='green', label='actual stock price')
-    plt.plot(pred_test, color='blue', label='predicted stock price')
+    plt.plot(test_set[60:len(test_set),i] , color='green', label='actual stock price')
+    plt.plot(y_test_pred_rescaled[i], color='blue', label='predicted stock price')
     plt.title('google stock price')
     plt.xlabel('time')
     plt.ylabel('google stock price')
@@ -157,14 +153,30 @@ for i in range(y_test.shape[1]):
     plt.show()
     
     # r2 score and mse score on train data
-    print(r2_score(training_set[60:len(training_set),0], pred_train))
-    print(mean_squared_error(training_set[60:len(training_set),0], pred_train))
+    print(r2_score(training_set[60:len(training_set),i], y_train_pred_rescaled[i]))
+    print(mean_squared_error(training_set[60:len(training_set),0], y_train_pred_rescaled[i]))
     
     # visualising the results for train results
     plt.plot(training_set[60:len(training_set),0], color='red', label='actual stock price')
-    plt.plot(pred_train, color='blue', label='predicted stock price')
+    plt.plot(y_train_pred_rescaled[i], color='blue', label='predicted stock price')
     plt.title('google stock price')
     plt.xlabel('time')
     plt.ylabel('google stock price')
     plt.legend()
     plt.show()
+    
+# range to bid on stock
+bid_range = y_test_pred_rescaled[1] - y_test_pred_rescaled[0]
+plt.plot(bid_range, color='red', label='bid_range')
+plt.hlines(0, 0, len(bid_range), colors='blue', linestyles='dashed')
+plt.show()
+
+plt.plot(y_test_pred_rescaled[0] , color='red', label='predicted opening price')
+plt.plot(y_test_pred_rescaled[1], color='blue', label='predicted closing price')
+plt.title('google stock price')
+plt.xlabel('time')
+plt.ylabel('google stock price')
+plt.legend()
+plt.show()
+
+    
