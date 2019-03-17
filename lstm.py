@@ -145,3 +145,4 @@ plt.xlabel('time')
 plt.ylabel('google stock price')
 plt.legend()
 plt.show()
+
