@@ -69,7 +69,7 @@ for j in range(X_train.shape[2]):
         model.compile(optimizer = 'rmsprop', loss = 'mean_squared_error')
         
         # fitting the rnn to the training set
-        model.fit(X_train[:, :, j].reshape(X_train.shape[0], X_train.shape[1], 1), y_train[:, i], epochs = 10, batch_size = 32)
+        model.fit(X_train[:, :, j].reshape(X_train.shape[0], X_train.shape[1], 1), y_train[:, i], epochs = 120, batch_size = 32)
     
         # Saving the model, each of one attribute
         # serialize model to JSON
