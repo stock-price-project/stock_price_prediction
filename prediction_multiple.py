@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import r2_score, mean_squared_error
+import csv
+from math import sqrt
 # Importing the Keras libraries 
 from keras.models import Sequential
 from keras.layers import Dense
@@ -154,4 +156,35 @@ plt.xlabel('days')
 plt.ylabel('google stock price')
 plt.legend()
 plt.show()
+
+#writing output to a csv file
+
+actual_price_df = pd.DataFrame(testing_set[60:len(testing_set),1])
+predict_price_df = pd.DataFrame(pred_test)
+mse_list = []
+rmse_list = []
+
+for i in range(len(pred_test)):
+    mse_list.append(mean_squared_error(np.array(testing_set[60:len(testing_set),1][i]).reshape(-1), pred_test[i]))
+
+for j in range(len(pred_test)):
+    rmse_list.append(sqrt(mean_squared_error(np.array(testing_set[60:len(testing_set),1][j]).reshape(-1), pred_test[j])))
+
+
+
+mse_value = pd.DataFrame(mse_list)
+rmse_value = pd.DataFrame(rmse_list)
+combined_df = pd.concat([actual_price_df, predict_price_df, mse_value, rmse_value], axis = 1 )
+combined_df.columns = ['Actual_Closing_Price', 'Predicted_Closing_Price', 'MSE_Value','RMSE_Value']
+combined_df.to_csv('./result/prediction_multiple_result.csv', index = False)
+
+
+
+
+
+
+
+
+
+
 
