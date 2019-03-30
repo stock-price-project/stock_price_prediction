@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score, mean_squared_error
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
-
+from math import sqrt
 
 # training dataframe
 df_train = pd.read_csv("./dataset/train.csv")
@@ -54,7 +54,7 @@ plt.show()
 
 print("R2 Score : ", r2_score(train_close, train_predict))
 print("MSE Score : ", mean_squared_error(train_close, train_predict))
-   
+print("RMSE Score : ", sqrt(mean_squared_error(train_close, train_predict)))   
 # prediction for training data
 X_poly_test = poly_feat.fit_transform(test_dates)
 test_predict = poly_model.predict(X_poly_test)
@@ -71,5 +71,24 @@ plt.show()
 
 print("R2 Score : ", r2_score(test_close, test_predict))
 print("MSE Score : ", mean_squared_error(test_close, test_predict))
+print("RMSE Score : ", sqrt(mean_squared_error(test_close, test_predict)))
 
+actual_price_df = pd.DataFrame(test_close)
+predict_price_df = pd.DataFrame(test_predict)
+mse_list = []
+rmse_list = []
+
+for i in range(len(test_predict)):
+    mse_list.append(mean_squared_error(np.array(test_close[i]).reshape(-1), test_predict[i]))
+
+for j in range(len(test_predict)):
+    rmse_list.append(sqrt(mean_squared_error(np.array(test_close[j]).reshape(-1), test_predict[j])))
+
+
+
+mse_value = pd.DataFrame(mse_list)
+rmse_value = pd.DataFrame(rmse_list)
+combined_df = pd.concat([actual_price_df, predict_price_df, mse_value, rmse_value], axis = 1 )
+combined_df.columns = ['Actual_Closing_Price', 'Predicted_Closing_Price', 'MSE_Value','RMSE_Value']
+combined_df.to_csv('./result/prediction_regression_result.csv', index = False)
 
