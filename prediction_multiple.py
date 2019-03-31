@@ -48,12 +48,15 @@ X_train, y_train = np.array(X_train), np.array(y_train)
 X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], 4)
 
 
-# loading testing data
+# importing the testing file
 df_test = pd.read_csv('./dataset/test.csv')
 
 # including the avg attribute in the test set
 df_test = pd.concat([df_test, pd.DataFrame((df_test['High'] + df_test['Low'])/2, columns=['Avg.val'])], axis=1)
 testing_set = df_test.iloc[:, [1, 4, 6, 7]].values
+x1 = pd.DataFrame(training_set[len(training_set)-60:])
+x2 = pd.DataFrame(testing_set)
+testing_set = np.array(pd.concat([x1, x2]))
 
 # feature scaling
 sc_t = MinMaxScaler(feature_range = (0,1))

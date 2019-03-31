@@ -47,6 +47,9 @@ X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], 1)
 # importing the testing file
 df_test = pd.read_csv('./dataset/test.csv')
 testing_set = df_test.iloc[:, [1, 4]].values
+x1 = pd.DataFrame(training_set[len(training_set)-60:])
+x2 = pd.DataFrame(testing_set)
+testing_set = np.array(pd.concat([x1, x2]))
 
 # feature scaling
 sc_t = MinMaxScaler(feature_range = (0,1))
@@ -64,7 +67,6 @@ for i in range(60, len(testing_set_scaled)):
 X_test = np.array(X_test)
 # creating 3D tensor
 X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
-
 
 ###############################################################################
 

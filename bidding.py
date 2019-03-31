@@ -49,13 +49,16 @@ X_train, y_train = np.array(X_train), np.array(y_train)
 X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], 4)
 
 
-# loading testing data
+# importing the testing file
 df_test = pd.read_csv('./dataset/test.csv')
 
 # including the avg attribute in the test set
 df_test = pd.concat([df_test, pd.DataFrame((df_test['High'] + df_test['Low'])/2, \
                                            columns=['Avg.val'])], axis=1)
 test_set = df_test.iloc[:, [1, 4, 6, 7]].values
+x1 = pd.DataFrame(training_set[len(training_set)-60:])
+x2 = pd.DataFrame(test_set)
+test_set = np.array(pd.concat([x1, x2]))
 
 # feature scaling
 sc_t = MinMaxScaler(feature_range = (0,1))
@@ -141,7 +144,7 @@ mse_open_list = []
 mse_close_list = []
 bid_range = []
 
-for i in range(42):
+for i in range(X_test.shape[0]):
     
     test_actual = test_set[60:len(test_set),0][i]
     mse_open = mean_squared_error(test_actual.reshape(-1), test_predict_rescaled[0][i])
@@ -171,5 +174,4 @@ combined_df.columns = ['actual_open','predict_open', 'actual_close', \
                        'close error']
 combined_df.to_csv('./result/prediction_bid_result.csv', index = False)
 print("results saved to csv file")
-
 
