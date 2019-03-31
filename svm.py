@@ -70,23 +70,23 @@ print("RMSE Score : ", sqrt(mean_squared_error(test_close, test_predict)))
 plot.time_series_plot(test_close, test_predict, 'red', 'blue', 'actual_close', \
                  'predicted_close', 'days', 'price', 'SVM Model (test data)')
 
-
-# saving the results in csv format
-mse_list = []
-rmse_list = []
+# plotting error
+error_list = []
 
 for i in range(len(test_close)):
-    mse_error = mean_squared_error(np.array(test_close[i]).reshape(-1), test_predict[i])
-    rmse_error = sqrt(mse_error)
-    mse_list.append(mse_error)
-    rmse_list.append(rmse_error)
+    error = test_close[i] - test_predict[i]
+    error_list.append(error)
+    
+plot.error_plot(error_list, "error graph - closing price prediction", 'close error') 
 
-actual_price_df = pd.DataFrame(test_close)
-predict_price_df = pd.DataFrame(test_predict)
-mse_value = pd.DataFrame(mse_list)
-rmse_value = pd.DataFrame(rmse_list)
-combined_df = pd.concat([actual_price_df, predict_price_df, mse_value, rmse_value], axis = 1 )
-combined_df.columns = ['Actual_Closing_Price', 'Predicted_Closing_Price', 'MSE_Value','RMSE_Value']
+###############################################################################
+
+
+# saving the results in csv format
+actual_price_df = pd.DataFrame(test_close).round(3)
+predict_price_df = pd.DataFrame(test_predict).round(3)
+error_df = pd.DataFrame(error_list).round(3)
+combined_df = pd.concat([actual_price_df, predict_price_df, error_df], axis = 1 )
+combined_df.columns = ['actual_close', 'predicted_close', 'error_value']
 combined_df.to_csv('./result/prediction_svm_result.csv', index = False)
 print("results saved to csv file")
-
