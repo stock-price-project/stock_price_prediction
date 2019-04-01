@@ -119,17 +119,17 @@ for i in range(y_train.shape[1]):
 
 # analysis using opening price   
 test_actual = test_set[60:len(test_set),0]
-print(r2_score(test_actual, test_predict_rescaled[0]))
-print(mean_squared_error(test_actual, test_predict_rescaled[0]))
-print(sqrt(mean_squared_error(test_actual, test_predict_rescaled[0])))
+print('R2 Score : ', r2_score(test_actual, test_predict_rescaled[0]))
+print('MSE Score : ', mean_squared_error(test_actual, test_predict_rescaled[0]))
+print('RMSE Score : ', sqrt(mean_squared_error(test_actual, test_predict_rescaled[0])))
 plot.time_series_plot(test_actual, test_predict_rescaled[0], 'red', 'blue', 'actual', \
                       'predicted', 'days', 'open price', 'Neural Network (multiple | opening)')    
 
 # analysis using closing price 
 test_actual = test_set[60:len(test_set),1]
-print(r2_score(test_actual, test_predict_rescaled[1]))
-print(mean_squared_error(test_actual, test_predict_rescaled[1]))
-print(sqrt(mean_squared_error(test_actual, test_predict_rescaled[1])))
+print('R2 Score : ', r2_score(test_actual, test_predict_rescaled[1]))
+print('MSE Score : ', mean_squared_error(test_actual, test_predict_rescaled[1]))
+print('RMSE Score : 'sqrt(mean_squared_error(test_actual, test_predict_rescaled[1])))
 plot.time_series_plot(test_actual, test_predict_rescaled[1], 'red', 'blue', 'actual', \
                       'predicted', 'days', 'close price', 'Neural Network (multiple | closing)') 
 

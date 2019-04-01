@@ -100,9 +100,9 @@ scpred1 = scpred1.fit(training_set[:,1].reshape(-1,1))
 train_predict = scpred1.inverse_transform(pred_train_scaled)
 
 train_close = training_set[60:len(training_set),1]
-print(r2_score(train_close, train_predict))
-print(mean_squared_error(train_close, train_predict))
-print(sqrt(mean_squared_error(train_close, train_predict)))
+print('R2 Score : ', r2_score(train_close, train_predict))
+print('MSE Score : ', mean_squared_error(train_close, train_predict))
+print('RMSE Score : ', sqrt(mean_squared_error(train_close, train_predict)))
 
 plot.time_series_plot(train_close, train_predict, 'red', 'blue', 'actual_close', \
                  'predicted_close', 'days', 'price', 'Neural Network (multiple attributes - train data)')
@@ -116,9 +116,9 @@ scpred = scpred.fit(testing_set[:,1].reshape(-1,1))
 test_predict = scpred.inverse_transform(pred_test_scaled)
 
 test_close = testing_set[60:len(testing_set),1]
-print(r2_score(test_close, test_predict))
-print(mean_squared_error(test_close, test_predict))
-print(sqrt(mean_squared_error(test_close, test_predict)))
+print('R2 Score : ', r2_score(test_close, test_predict))
+print('MSE Score : ', mean_squared_error(test_close, test_predict))
+print('RMSE Score : ', sqrt(mean_squared_error(test_close, test_predict)))
 
 plot.time_series_plot(test_close, test_predict, 'red', 'blue', 'actual_close', \
                  'predicted_close', 'days', 'price', 'Neural Network (multiple attributes - test data)')
