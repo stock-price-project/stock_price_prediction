@@ -1,0 +1,3 @@
+,lstm single,lstm multiple,poly regression,svr
+r2 score,0.481974,0.755406,-1.143061,-171.527141
+rmse score,34.507106,23.711341,70.185956,629.740497
