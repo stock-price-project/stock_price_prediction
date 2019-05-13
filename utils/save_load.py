@@ -1,13 +1,14 @@
 '''
 This script is for saving and loading the models
 '''
-
+import os
 from keras.models import model_from_json
 
 
 def save_model(path_name, model):
     # serialize model to JSON
     model_json = model.to_json()
+    os.makedirs(path_name)
     with open(path_name + "/model.json", "w") as json_file:
         json_file.write(model_json)
         
