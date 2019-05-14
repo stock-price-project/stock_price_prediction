@@ -6,11 +6,11 @@
 * Epochs : 120
 
 ### Test Score
-* r2 score = 0.518706
-* mse score = 733.190769
+* r2 score = 0.481974
+* mse score = 0.013954
 ### Train Score
 * r2 score = 0.949394
-* mse score = 3904.659958
+* mse score = 0.002797
 
 ## Output
 Test plot  

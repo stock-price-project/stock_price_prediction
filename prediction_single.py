@@ -12,7 +12,7 @@ from sklearn.metrics import r2_score, mean_squared_error
 from utils import train
 from utils import save_load
 from utils import plot
-from math import sqrt
+
 
 
 # loading training data
@@ -95,9 +95,10 @@ scpred1 = scpred1.fit(training_set[:,1].reshape(-1,1))
 train_predict = scpred1.inverse_transform(pred_train_scaled)
 
 train_close = training_set[60:len(training_set),1]
-print('R2 Score : ', r2_score(train_close, train_predict))
-print('MSE Score : ', mean_squared_error(train_close, train_predict))
-print('RMSE Score : ',sqrt(mean_squared_error(train_close, train_predict)))
+train_close_scaled = training_set_scaled[60:len(training_set),1]
+
+print('R2 Score : ', r2_score(train_close_scaled, pred_train_scaled))
+print('MSE Score : ', mean_squared_error(train_close_scaled, pred_train_scaled))
 
 plot.time_series_plot(train_close, train_predict, 'red', 'blue', 'actual_close', \
                  'predicted_close', 'days', 'price', 'Neural Network (single attribute - train data)')
@@ -111,9 +112,10 @@ scpred = scpred.fit(testing_set[:,1].reshape(-1,1))
 test_predict = scpred.inverse_transform(pred_test_scaled)
 
 test_close = testing_set[60:len(testing_set),1]
-print('R2 Score : ', r2_score(test_close, test_predict))
-print('MSE Score : ', mean_squared_error(test_close, test_predict))
-print('RMSE Score : ', sqrt(mean_squared_error(test_close, test_predict)))
+test_close_scaled = testing_set_scaled[60:len(testing_set),1]
+
+print('R2 Score : ', r2_score(test_close_scaled, pred_test_scaled))
+print('MSE Score : ', mean_squared_error(test_close_scaled, pred_test_scaled))
 
 plot.time_series_plot(test_close, test_predict, 'red', 'blue', 'actual_close', \
                  'predicted_close', 'days', 'price', 'Neural Network (single attribute - test data)')
@@ -137,6 +139,5 @@ predict_price_df = pd.DataFrame(test_predict).round(3)
 error_df = pd.DataFrame(error_list).round(3)
 combined_df = pd.concat([actual_price_df, predict_price_df, error_df], axis = 1 )
 combined_df.columns = ['actual_close', 'predicted_close', 'error_value']
-combined_df.to_csv('./result/prediction_single_result.csv', index = False)
-print("results saved to csv file")
+combined_df.to_excel('./result/prediction_single_result.xlsx', index = False)
 
