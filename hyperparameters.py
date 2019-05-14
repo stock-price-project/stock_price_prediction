@@ -124,7 +124,7 @@ for epoch in epochs:
         # creating X_test, y_test
         X_test = []
         y_test = [] 
-        test_close = test_set[neuron:len(test_set), 0]
+        test_close = test_set_scaled[neuron:len(test_set), 0]
         
         for i in range(neuron, len(test_set_scaled)):
             X_test.append(test_set_scaled[i-neuron: i])
@@ -140,10 +140,7 @@ for epoch in epochs:
         for optim in optimiser:
             for func in activation:
                 model = save_load.load_model(path_name + "/" + str(count))
-                predicted_value = model.predict(X_test)
-                scpred = MinMaxScaler(feature_range = (0,1))
-                scpred = scpred.fit(test_close.reshape(-1,1)) 
-                test_predict = scpred.inverse_transform(predicted_value)
+                test_predict = model.predict(X_test)
                 model_accuracy_r2 = r2_score(test_close, test_predict)
                 model_accuracy_mse = mean_squared_error(test_close, test_predict)
                 print("r2 : ", model_accuracy_r2)
@@ -154,4 +151,4 @@ for epoch in epochs:
                 
                 results.loc[count] = [epoch, neuron, optim, func, model_accuracy_r2, model_accuracy_mse]
 
-results.to_excel("./model/hyperParaModels/output.xlsx")
+results.to_excel("./result/hyperparameter_optim.xlsx")
