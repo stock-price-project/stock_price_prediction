@@ -9,10 +9,9 @@ bidding range.
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.metrics import r2_score
+from sklearn.metrics import r2_score, mean_squared_error
 from utils import train
 from utils import save_load
-from utils import plot
 
 
 # loading training data
@@ -80,6 +79,10 @@ first loop for training model with open price
 second loop for training model with close price
 '''
 
+count = 0
+epochs = 120
+no_of_features = 4
+
 combination = []
 columns_index = [0, 1, 2, 3]
 
@@ -87,15 +90,13 @@ from itertools import combinations
 for i in range(1,len(columns_index)+1):
     combination.append(list((combinations(columns_index, i))))
 
-count = 0
-epochs = 120
-no_of_features = 4
+
 
 for i in range(no_of_features):
     for j in range(len(combination[i])):
         feature = np.array(combination[i][j])
         model = train.training(X_train[:, :, feature], y_train, feature.shape[0] , epochs)
-        path_name = "./model/optimisation" 
+        path_name = "./model/feature_importance" 
         # Saving the model
         save_load.save_model(path_name + "/" + str(count), model)
         count = count + 1
@@ -103,32 +104,28 @@ for i in range(no_of_features):
 # =============================================================================
 
 
-path_name = "./model/optimisation" 
+path_name = "./model/feature_importance" 
  
-test_close = test_set[60:len(test_set),1]
+test_close = test_set_scaled[60:len(test_set),1]
+results = pd.DataFrame(columns=['feature_col', 'r2_score', 'mse_score'])
 count = 0
-max_accuracy = 0
+
 for i in range(no_of_features):
     for j in range(len(combination[i])):
         feature = np.array(combination[i][j])
         model = save_load.load_model(path_name + "/" + str(count))
         #model = train.training(X_train[:, :, feature], y_train, feature.shape[0] , epochs)
-        predicted_value = model.predict(X_test[:, :, feature])
-        scpred = MinMaxScaler(feature_range = (0,1))
-        scpred = scpred.fit(test_set[:,1].reshape(-1,1)) 
-        test_predict = scpred.inverse_transform(predicted_value)
-        model_accuracy = r2_score(test_close, test_predict)
-        print("model_accuracy : ", model_accuracy)
-        plot.time_series_plot(test_close, test_predict, 'red', 'blue', 'actual_close', \
-                 'predicted_close', 'days', 'price', 'Neural Network (multiple attributes - train data)')
-        if model_accuracy > max_accuracy:
-            max_accuracy = model_accuracy
-            max_model = feature
-            
+        test_predict = model.predict(X_test[:, :, feature])
+        #scpred = MinMaxScaler(feature_range = (0,1))
+        #scpred = scpred.fit(test_set[:,1].reshape(-1,1)) 
+        #test_predict = scpred.inverse_transform(predicted_value)
+        model_accuracy_r2 = r2_score(test_close, test_predict)
+        model_accuracy_mse = mean_squared_error(test_close, test_predict)
+        print("feature: {}\n r2_score: {}\n mse_score: {}\n".format(feature, model_accuracy_r2, model_accuracy_mse))
+        #plot.time_series_plot(test_close, test_predict, 'red', 'blue', 'actual_close', \
+        #         'predicted_close', 'days', 'price', 'Neural Network (multiple attributes - train data)')
+        
+        results.loc[count] = [feature, model_accuracy_r2, model_accuracy_mse]
         count = count + 1
 
-print("max accuarcy : ", max_accuracy)
-print("feature column : ", max_model)
-
-
-
+results.to_excel("./result/feature_importance.xlsx")
