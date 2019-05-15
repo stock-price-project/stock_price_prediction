@@ -26,7 +26,7 @@ def training(X_train, y_train, no_of_features, epochs):
     model.add(LSTM(units = 40))
     model.add(Dropout(0.2))
     
-    model.add(Dense(units = 1, activation='linear'))
+    model.add(Dense(units = 1, activation='sigmoid'))
     
     # compiling the rnn
     model.compile(optimizer = 'rmsprop', loss = 'mean_squared_error')
