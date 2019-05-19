@@ -101,5 +101,4 @@ predict_price_df = pd.DataFrame(test_predict).round(3)
 error_df = pd.DataFrame(error_list).round(3)
 combined_df = pd.concat([actual_price_df, predict_price_df, error_df], axis = 1 )
 combined_df.columns = ['actual_close', 'predicted_close', 'error_value']
-combined_df.to_csv('./result/prediction_regression_result.csv', index = False)
-print("results saved to csv file")
+combined_df.to_excel('./result/prediction_regression_result.xlsx', index = False)

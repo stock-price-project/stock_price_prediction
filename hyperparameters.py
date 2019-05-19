@@ -1,5 +1,6 @@
 '''
-this script is for hyperparameter optimisation.
+this script is for hyperparameter optimisation where we will get best pair of
+hyperparameters.
 '''
 
 # Importing the libraries
@@ -10,56 +11,45 @@ from sklearn.metrics import r2_score, mean_squared_error
 from utils import save_load
 from utils import plot
 
-
-
 # loading training data
-df = pd.read_csv('./dataset/train.csv')
+df_train = pd.read_csv('./dataset/train.csv')
+df_test = pd.read_csv('./dataset/test.csv')
+df = pd.concat([df_train, df_test], axis=0)
 
-# Adding average feature in the dataframe
-df = pd.concat([df, pd.DataFrame((df['High'] + df['Low'])/2, columns=['Avg.val'])], axis=1)
+columns = [1]
+
+input_set = df.iloc[:, columns].values
+
+sc = MinMaxScaler(feature_range = (0,1))
+sc.fit(input_set)
 
 '''
-we have used open, close, volume, avg. data of the stock data here, open price,
-close price, volume and avg. is used as the input data trend and close price 
-will be our predicted output
+we have used open, close, volume, avg. data of the stock data here. Open price,
+close price, volume and avg. is used as the input data trend
 '''
-training_set = df.iloc[:, [4]].values
+
+no_of_features = 1
+input_col = [0]
+output_col = [0]
+
+training_set = df_train.iloc[:, columns].values
 
 # Feature Scaling
-sc = MinMaxScaler(feature_range = (0,1))
-training_set_scaled = sc.fit_transform(training_set)
-
-'''
-creating a data structure with 60 timestamp and predicting 1 output, later it is
-reshaped, resulting in 3D tensor
-'''
-
-
-# loading testing data
-df_test = pd.read_csv('./dataset/test.csv')
+training_set_scaled = sc.transform(training_set)
 
 # including the avg attribute in the test set
-df_test = pd.concat([df_test, pd.DataFrame((df_test['High'] + df_test['Low'])/2, columns=['Avg.val'])], axis=1)
-test_set = df_test.iloc[:, [4]].values
 
-# feature scaling
-sc_t = MinMaxScaler(feature_range = (0,1))
-test_set_scaled = sc_t.fit_transform(test_set)
 
 
 epochs = [90, 120, 150]
-neurons = [5, 20, 60]
+neurons = [5, 60, 80] 
 optimiser = ['adam', 'rmsprop']
 activation = ['linear', 'tanh', 'relu', 'sigmoid']
 
 count = 0
-no_of_features = 1
 
 # ============================================================================
-'''
-first loop for training model with open price
-second loop for training model with close price
-'''
+
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import LSTM
@@ -70,11 +60,9 @@ for epoch in epochs:
         X_train = []
         y_train = []
         for i in range(neuron, len(training_set_scaled)-1):
-            X_train.append(training_set_scaled[i-neuron: i])     
-            y_train.append(training_set_scaled[i, 0])
-        # Feature Scaling
-        sc = MinMaxScaler(feature_range = (0,1))
-        training_set_scaled = sc.fit_transform(training_set)
+            X_train.append(training_set_scaled[i-neuron: i, input_col])     
+            y_train.append(training_set_scaled[i, output_col])
+            
         # converting to numpy array
         X_train, y_train = np.array(X_train), np.array(y_train)
         # Reshaping to create 3D tensor
@@ -109,30 +97,35 @@ for epoch in epochs:
                     
                     save_load.save_model(path_name + "/" + str(count), model)
                     count = count + 1
-
+                    
 
 # =============================================================================
 
 path_name = "./model/hyperParaModels" 
-
- 
 results = pd.DataFrame(columns=['epoch', 'neuron', 'optim', 'activation', 'r2_score', 'MSE'])
-max_accuracy = 0
+
 count=0
+
 for epoch in epochs:
     for neuron in neurons:
         # creating X_test, y_test
         X_test = []
-        y_test = [] 
-        test_close = test_set_scaled[neuron:len(test_set), 0]
+        y_test = []
+        testing_set = df_test.iloc[:, columns].values
+        #test_output = testing_set_scaled[neuron:len(testing_set_scaled), output_col]
+        x1 = pd.DataFrame(training_set[len(training_set)-neuron:])
+        x2 = pd.DataFrame(testing_set)
+        testing_set = np.array(pd.concat([x1, x2]))
         
-        for i in range(neuron, len(test_set_scaled)):
-            X_test.append(test_set_scaled[i-neuron: i])
-            y_test.append(test_set_scaled[i, 0])
+        # feature scaling
+        testing_set_scaled = sc.transform(testing_set)
+        
+        for i in range(neuron, len(testing_set_scaled)):
+            X_test.append(testing_set_scaled[i-neuron: i, input_col])
+            y_test.append(testing_set_scaled[i, output_col])
             
         # converting to numpy array
-        X_test = np.array(X_test)
-        y_test = np.array(y_test)
+        X_test, y_test = np.array(X_test), np.array(y_test)
         
         # creating 3D tensor
         X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], no_of_features))
@@ -140,15 +133,20 @@ for epoch in epochs:
         for optim in optimiser:
             for func in activation:
                 model = save_load.load_model(path_name + "/" + str(count))
-                test_predict = model.predict(X_test)
-                model_accuracy_r2 = r2_score(test_close, test_predict)
-                model_accuracy_mse = mean_squared_error(test_close, test_predict)
+                
+                pred_test_scaled = model.predict(X_test)
+                test_predict = sc.inverse_transform(pred_test_scaled)
+                test_actual = sc.inverse_transform(y_test)
+                
+                model_accuracy_r2 = r2_score(test_actual, test_predict)
+                model_accuracy_mse = mean_squared_error(test_actual, test_predict)
                 print("r2 : ", model_accuracy_r2)
                 print("mse : ", model_accuracy_mse)
-                plot.time_series_plot(test_close, test_predict, 'red', 'blue', 'actual_close', \
+                plot.time_series_plot(test_actual, test_predict, 'red', 'blue', 'actual_close', \
                          'predicted_close', 'days', 'price', 'Neural Network (multiple attributes - train data)')
                 count = count +1
                 
                 results.loc[count] = [epoch, neuron, optim, func, model_accuracy_r2, model_accuracy_mse]
 
-results.to_excel("./result/hyperparameter_optim.xlsx")
+results.to_excel("./model/hyperParaModels/hyperparameter_optim.xlsx")
+

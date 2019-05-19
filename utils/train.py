@@ -26,10 +26,10 @@ def training(X_train, y_train, no_of_features, epochs):
     model.add(LSTM(units = 40))
     model.add(Dropout(0.2))
     
-    model.add(Dense(units = 1, activation='sigmoid'))
+    model.add(Dense(units = 1, activation='tanh'))
     
     # compiling the rnn
-    model.compile(optimizer = 'rmsprop', loss = 'mean_squared_error')
+    model.compile(optimizer = 'adam', loss = 'mean_squared_error')
     
     # fitting the rnn to the training set
     model.fit(X_train, y_train, epochs = epochs, batch_size = 32)
