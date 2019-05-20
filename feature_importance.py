@@ -28,7 +28,7 @@ close price, volume and avg. is used for creating the pair of features.
 columns = [1, 4, 6, 7]
 no_of_feature = 4
 timestep = 80
-output_col = [0]
+output_col = [1]
 
 input_set = df.iloc[:, columns].values
 
@@ -83,6 +83,7 @@ X_test, y_test = np.array(X_test), np.array(y_test)
 X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], no_of_feature))
 
 # ============================================================================
+import os
 
 count = 0
 epochs = 150
@@ -99,14 +100,16 @@ for i in range(no_of_feature):
     for j in range(len(combination[i])):
         feature = np.array(combination[i][j])
         model = train.training(X_train[:, :, feature], y_train, feature.shape[0] , epochs)
-        path_name = "./model/feature_importance" 
+        path_name = "./model/feature_importance_close" + "/" + str(count)
+        
+        os.mkdir(path_name)
         # Saving the model
-        save_load.save_model(path_name + "/" + str(count), model)
+        save_load.save_model(path_name, model)
         count = count + 1
 
 # =============================================================================
 
-path_name = "./model/feature_importance" 
+path_name = "./model/feature_importance_close" 
 
 sc_output = MinMaxScaler(feature_range = (0,1))
 sc_output.fit(input_set[:,output_col])
@@ -129,9 +132,9 @@ for i in range(no_of_feature):
         print("feature: {}\n r2_score: {}\n mse_score: {}\n".format(feature, model_accuracy_r2, model_accuracy_mse))
         #plot.time_series_plot(test_close, test_predict, 'red', 'blue', 'actual_close', \
         #         'predicted_close', 'days', 'price', 'Neural Network (multiple attributes - train data)')
-        
+
         results.loc[count] = [feature, model_accuracy_r2, model_accuracy_mse]
         count = count + 1
 
-results.to_excel("./result/feature_importance_open.xlsx")
+results.to_excel("./result/feature_importance_close.xlsx")
 

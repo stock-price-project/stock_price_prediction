@@ -21,10 +21,10 @@ df = pd.concat([df_train, df_test], axis=0)
 # Adding average feature in the dataframe
 df = pd.concat([df, pd.DataFrame((df['High'] + df['Low'])/2, columns=['Avg.val'])], axis=1)
 
-columns = [1,6]
-no_of_feature = 2
+columns = [4, 6, 7]
+no_of_feature = 3
 timestep = 60
-input_col = [0, 1]
+input_col = [0, 1, 2]
 output_col = [0]
 
 input_set = df.iloc[:, columns].values
@@ -69,11 +69,14 @@ testing_set = np.array(pd.concat([x1, x2]))
 testing_set_scaled = sc.transform(testing_set)
 
 X_test = []
+y_test = []
 for i in range(timestep, len(testing_set_scaled)):
-    X_test.append(testing_set_scaled[i-timestep: i])
+    X_test.append(testing_set_scaled[i-timestep: i, input_col])
+    y_test.append(testing_set_scaled[i, output_col])
+    
     
 # converting to numpy array
-X_test = np.array(X_test)
+X_test, y_test = np.array(X_test), np.array(y_test)
 
 # creating 3D tensor
 X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], no_of_feature))
@@ -81,11 +84,10 @@ X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], no_of_feature))
 
 ###############################################################################  
 
-epochs = 120
+epochs = 150
 model = train.training(X_train, y_train, no_of_feature, epochs)
 
-
-path_name = "./model/final_model_pred_open"
+path_name = "./model/final_model_open"
 
 # Saving the model
 save_load.save_model(path_name, model)
@@ -94,7 +96,7 @@ save_load.save_model(path_name, model)
 
 
 # loading the model
-path_name = "./model/final_model_pred_open"
+path_name = "./model/final_model_open"
 model = save_load.load_model(path_name)
 
 sc_output = MinMaxScaler(feature_range = (0,1))
@@ -105,13 +107,14 @@ pred_train_scaled = model.predict(X_train)
 
 # rescaling for predictions ( train data )
 train_predict = sc_output.inverse_transform(pred_train_scaled)
+train_actual = sc_output.inverse_transform(y_train)
 
-train_output = training_set[timestep:len(training_set), output_col]
-train_output_scaled = training_set_scaled[timestep:len(training_set_scaled), output_col]
-print('R2 Score : ', r2_score(train_output_scaled, pred_train_scaled))
-print('MSE Score : ', mean_squared_error(train_output_scaled, pred_train_scaled))
+#train_output = training_set[timestep:len(training_set), output_col]
+#train_output_scaled = training_set_scaled[timestep:len(training_set_scaled), output_col]
+print('R2 Score : ', r2_score(train_actual, train_predict))
+print('MSE Score : ', mean_squared_error(train_actual, train_predict))
 
-plot.time_series_plot(train_output, train_predict, 'red', 'blue', 'actual_open', \
+plot.time_series_plot(train_actual, train_predict, 'red', 'blue', 'actual_open', \
                  'predicted_open', 'days', 'price', 'Neural Network (multiple attributes - train data)')
 
 
@@ -120,33 +123,32 @@ pred_test_scaled = model.predict(X_test)
 
 # rescaling for predictions ( test data )
 test_predict = sc_output.inverse_transform(pred_test_scaled)
+test_actual = sc_output.inverse_transform(y_test)
 
-test_output = testing_set[timestep:len(testing_set), output_col]
-test_output_scaled = testing_set_scaled[timestep:len(testing_set_scaled), output_col]
-print('R2 Score : ', r2_score(test_output_scaled, pred_test_scaled))
-print('MSE Score : ', mean_squared_error(test_output_scaled, pred_test_scaled))
+#test_output = testing_set[timestep:len(testing_set), output_col]
+#test_output_scaled = testing_set_scaled[timestep:len(testing_set_scaled), output_col]
+print('R2 Score : ', r2_score(test_actual, test_predict))
+print('MSE Score : ', mean_squared_error(test_actual, test_predict))
 
-plot.time_series_plot(test_output, test_predict, 'red', 'blue', 'actual_open', \
+plot.time_series_plot(test_actual, test_predict, 'red', 'blue', 'actual_open', \
                  'predicted_open', 'days', 'price', 'Neural Network (multiple attributes - test data)')
 
 # plotting error
 error_list = []
 
-for i in range(len(test_output)):
-    error = ((test_output[i] - test_predict[i])/test_output[i])*100
+for i in range(len(test_actual)):
+    error = ((test_actual[i] - test_predict[i])/test_actual[i])*100
     error_list.append(error)
-    
-#plot.error_plot(error_list, "error graph - closing price prediction", 'close error') 
     
 ###############################################################################
 
 
-# saving the results in csv format
+# saving the results in excel format
 date = pd.DataFrame(df_test['Date'])
-actual_price_df = pd.DataFrame(test_output).round(3)
+actual_price_df = pd.DataFrame(test_actual).round(3)
 predict_price_df = pd.DataFrame(test_predict).round(3)
 error_df = pd.DataFrame(error_list).round(3)
 combined_df = pd.concat([date, actual_price_df, predict_price_df, error_df], axis = 1 )
 combined_df.columns = ['date','actual_open', 'predicted_open', 'error_percent']
-combined_df.to_excel('./model/final_model_pred_open/result.xlsx', index = False)
+combined_df.to_excel('./model/final_model_open/result.xlsx', index = False)
 
