@@ -38,5 +38,11 @@ The motivation of this project was to implement the model using LSTM and to comp
 * future stock predictionults
 
 ## Results
+for opening price prediction
+* maximum r2 score on test set : 0.867536
+* maximum r2 score on train set : 0.999436
 
+for closing price prediction
+* maximum r2 score on test set : 0.769922
+* maximum r2 score on train set : 0.997514
 
