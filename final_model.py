@@ -21,11 +21,11 @@ df = pd.concat([df_train, df_test], axis=0)
 # Adding average feature in the dataframe
 df = pd.concat([df, pd.DataFrame((df['High'] + df['Low'])/2, columns=['Avg.val'])], axis=1)
 
-columns = [4, 6, 7]
-no_of_feature = 3
-timestep = 60
-input_col = [0, 1, 2]
-output_col = [0]
+columns = [1, 4, 6, 7]
+no_of_feature = 4
+timestep = 80
+input_col = [0, 1, 2, 3]
+output_col = [1]
 
 input_set = df.iloc[:, columns].values
 
@@ -87,7 +87,7 @@ X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], no_of_feature))
 epochs = 150
 model = train.training(X_train, y_train, no_of_feature, epochs)
 
-path_name = "./model/final_model_open"
+path_name = "./model/final_model_pred_open"
 
 # Saving the model
 save_load.save_model(path_name, model)
@@ -96,7 +96,7 @@ save_load.save_model(path_name, model)
 
 
 # loading the model
-path_name = "./model/final_model_open"
+path_name = "./model/final_model_pred_close"
 model = save_load.load_model(path_name)
 
 sc_output = MinMaxScaler(feature_range = (0,1))
@@ -114,8 +114,8 @@ train_actual = sc_output.inverse_transform(y_train)
 print('R2 Score : ', r2_score(train_actual, train_predict))
 print('MSE Score : ', mean_squared_error(train_actual, train_predict))
 
-plot.time_series_plot(train_actual, train_predict, 'red', 'blue', 'actual_open', \
-                 'predicted_open', 'days', 'price', 'Neural Network (multiple attributes - train data)')
+plot.time_series_plot(train_actual, train_predict, 'red', 'blue', 'actual_close', \
+                 'predicted_close', 'days', 'price', 'Neural Network (multiple attributes - train data)')
 
 
 # prediction using test set
@@ -130,8 +130,8 @@ test_actual = sc_output.inverse_transform(y_test)
 print('R2 Score : ', r2_score(test_actual, test_predict))
 print('MSE Score : ', mean_squared_error(test_actual, test_predict))
 
-plot.time_series_plot(test_actual, test_predict, 'red', 'blue', 'actual_open', \
-                 'predicted_open', 'days', 'price', 'Neural Network (multiple attributes - test data)')
+plot.time_series_plot(test_actual, test_predict, 'red', 'blue', 'actual_close', \
+                 'predicted_close', 'days', 'price', 'Neural Network (multiple attributes - test data)')
 
 # plotting error
 error_list = []
@@ -149,6 +149,6 @@ actual_price_df = pd.DataFrame(test_actual).round(3)
 predict_price_df = pd.DataFrame(test_predict).round(3)
 error_df = pd.DataFrame(error_list).round(3)
 combined_df = pd.concat([date, actual_price_df, predict_price_df, error_df], axis = 1 )
-combined_df.columns = ['date','actual_open', 'predicted_open', 'error_percent']
-combined_df.to_excel('./model/final_model_open/result.xlsx', index = False)
+combined_df.columns = ['date','actual_close', 'predicted_close', 'error_percent']
+combined_df.to_excel('./model/final_model_pred_close/result.xlsx', index = False)
 

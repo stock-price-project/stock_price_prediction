@@ -10,168 +10,151 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import r2_score, mean_squared_error
-from utils import train
 from utils import save_load
 from utils import plot
-from math import sqrt
 
 
 # loading training data
-df = pd.read_csv('./dataset/train.csv')
+df_train = pd.read_csv('./dataset/train.csv')
+df_test = pd.read_csv('./dataset/test.csv')
+df = pd.concat([df_train, df_test], axis=0)
 
 # Adding average feature in the dataframe
 df = pd.concat([df, pd.DataFrame((df['High'] + df['Low'])/2, columns=['Avg.val'])], axis=1)
 
-'''
-we have used open, close, volume, avg. data of the stock data here, open price,
-close price, volume and avg. is used as the input data trend and close price 
-will be our predicted output
-'''
-training_set = df.iloc[:, [1, 4, 6, 7]].values
+columns = [1, 4, 6, 7]
+features_open = 3
+features_close = 4
+timestep = 80
+input_open = [1, 2, 3]
+input_close = [0, 1, 2, 3]
+col_output_open = [0]
+col_output_close = [1]
+
+input_set = df.iloc[:, columns].values
+
+sc = MinMaxScaler(feature_range = (0,1))
+sc.fit(input_set) 
+
+
+df_train = pd.concat([df_train, pd.DataFrame((df_train['High'] + df_train['Low'])/2, columns=['Avg.val'])], axis=1)
+training_set = df_train.iloc[:, columns].values
 
 # Feature Scaling
-sc = MinMaxScaler(feature_range = (0,1))
-training_set_scaled = sc.fit_transform(training_set)
-
-'''
-creating a data structure with 60 timestamp and predicting 1 output, later it is
-reshaped, resulting in 3D tensor
-'''
-X_train = []
-y_train = []
-for i in range(60, len(training_set_scaled)):
-    X_train.append(training_set_scaled[i-60: i])     
-    y_train.append(training_set_scaled[i, [0,1]])
-
-# converting to numpy array
-X_train, y_train = np.array(X_train), np.array(y_train)
-# Reshaping to create 3D tensor
-X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], 4)
-
-
-# importing the testing file
-df_test = pd.read_csv('./dataset/test.csv')
+training_set_scaled = sc.transform(training_set)
 
 # including the avg attribute in the test set
-df_test = pd.concat([df_test, pd.DataFrame((df_test['High'] + df_test['Low'])/2, \
-                                           columns=['Avg.val'])], axis=1)
-test_set = df_test.iloc[:, [1, 4, 6, 7]].values
-x1 = pd.DataFrame(training_set[len(training_set)-60:])
-x2 = pd.DataFrame(test_set)
-test_set = np.array(pd.concat([x1, x2]))
+df_test = pd.concat([df_test, pd.DataFrame((df_test['High'] + df_test['Low'])/2, columns=['Avg.val'])], axis=1)
+
+testing_set = df_test.iloc[:, columns].values
+
+x1 = pd.DataFrame(training_set[len(training_set)-timestep:])
+x2 = pd.DataFrame(testing_set)
+testing_set = np.array(pd.concat([x1, x2]))
 
 # feature scaling
-sc_t = MinMaxScaler(feature_range = (0,1))
-test_set_scaled = sc_t.fit_transform(test_set)
+testing_set_scaled = sc.transform(testing_set)
 
-# creating X_test, y_test
-X_test = [] 
-for i in range(60, len(test_set_scaled)):
-    X_test.append(test_set_scaled[i-60: i])
+X_test_open = []
+y_test_open = []
+for i in range(timestep, len(testing_set_scaled)):
+    X_test_open.append(testing_set_scaled[i-timestep: i, input_open])
+    y_test_open.append(testing_set_scaled[i, col_output_open])
+    
+X_test_close = []
+y_test_close = []
+for i in range(timestep, len(testing_set_scaled)):
+    X_test_close.append(testing_set_scaled[i-timestep: i, input_close])
+    y_test_close.append(testing_set_scaled[i, col_output_close])
     
 # converting to numpy array
-X_test = np.array(X_test)
+X_test_open, y_test_open = np.array(X_test_open), np.array(y_test_open)
+X_test_close, y_test_close = np.array(X_test_close), np.array(y_test_close)
 
 # creating 3D tensor
-X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 4))
+X_test_open = np.reshape(X_test_open, (X_test_open.shape[0], X_test_open.shape[1], features_open))
+X_test_close = np.reshape(X_test_close, (X_test_close.shape[0], X_test_close.shape[1], features_close))
 
 ###############################################################################
 
-'''
-first loop for training model with open price
-second loop for training model with close price
-'''
-epochs = 120
-no_of_features = 4
+sc_output = MinMaxScaler(feature_range = (0,1))
+sc_output.fit(input_set[:, col_output_open]) 
 
-for i in range(y_train.shape[1]):
-    
-    model = train.training(X_train, y_train[:, i], no_of_features, epochs)
-    
-    path_name = "./model/bid_model" 
+# loading the model
+path_name_open = "./model/trading_model/open"
+model_open = save_load.load_model(path_name_open)
 
-    # Saving the model
-    save_load.save_model(path_name + "/" + str(i), model)
-    
+# prediction using train set
+output_open_scaled = model_open.predict(X_test_open)
 
-###############################################################################
+# rescaling for predictions ( train data )
+output_open = sc_output.inverse_transform(output_open_scaled)
+actual_open = sc_output.inverse_transform(y_test_open)
 
-path_name = "./model/bid_model"
-test_predict = []
-test_predict_rescaled = []
+# analysis using opening price
+print('R2 Score : ', r2_score(actual_open, output_open))
+print('MSE Score : ', mean_squared_error(actual_open, output_open))
+plot.time_series_plot(actual_open, output_open, 'red', 'blue', 'actual', \
+                      'predicted', 'days', 'open price', 'Neural Network (trading)')    
 
-'''
-first loop for predicting open price
-second loop for predicting close price
-'''
-for i in range(y_train.shape[1]):
-    
-    # loading the model
-    model = save_load.load_model(path_name + "/" + str(i))
+# loading the model
+path_name_close = "./model/trading_model/close"
+model_close = save_load.load_model(path_name_close)
 
-    # performing prediction on test set
-    test_predict.append(model.predict(X_test))
-    
-    # rescaling for predictions ( test data )
-    scpred = MinMaxScaler(feature_range = (0,1))
-    scpred = scpred.fit(test_set[:,i].reshape(-1,1))
-    test_predict_rescaled.append(scpred.inverse_transform(np.array(test_predict[i]).reshape(-1,1)))
+# prediction using train set
+output_close_scaled = model_close.predict(X_test_close)
 
-# analysis using opening price   
-test_actual = test_set[60:len(test_set),0]
-print('R2 Score : ', r2_score(test_actual, test_predict_rescaled[0]))
-print('MSE Score : ', mean_squared_error(test_actual, test_predict_rescaled[0]))
-print('RMSE Score : ', sqrt(mean_squared_error(test_actual, test_predict_rescaled[0])))
-plot.time_series_plot(test_actual, test_predict_rescaled[0], 'red', 'blue', 'actual', \
-                      'predicted', 'days', 'open price', 'Neural Network (multiple | opening)')    
+# rescaling for predictions ( train data )
+output_close = sc_output.inverse_transform(output_close_scaled)
+actual_close = sc_output.inverse_transform(y_test_close)
 
 # analysis using closing price 
-test_actual = test_set[60:len(test_set),1]
-print('R2 Score : ', r2_score(test_actual, test_predict_rescaled[1]))
-print('MSE Score : ', mean_squared_error(test_actual, test_predict_rescaled[1]))
-print('RMSE Score : 'sqrt(mean_squared_error(test_actual, test_predict_rescaled[1])))
-plot.time_series_plot(test_actual, test_predict_rescaled[1], 'red', 'blue', 'actual', \
-                      'predicted', 'days', 'close price', 'Neural Network (multiple | closing)') 
+print('R2 Score : ', r2_score(actual_close, output_close))
+print('MSE Score : ', mean_squared_error(actual_close, output_close))
+plot.time_series_plot(actual_close, output_close, 'red', 'blue', 'actual', \
+                      'predicted', 'days', 'close price', 'Neural Network (trading)')  
 
-# analysis for bidding
-plot.bid_plot(test_predict_rescaled) 
 
+plot.time_series_plot(output_open, output_close, 'red', 'blue', 'actual', \
+                      'predicted', 'days', 'price', 'Neural Network (trading)')  
 
 ###############################################################################
 
 # saving the results in csv format
-mse_open_list = []
-mse_close_list = []
-bid_range = []
+error_open = []
+error_close = []
+avg_error = []
+trading_range = []
 
-for i in range(X_test.shape[0]):
-    
-    test_actual = test_set[60:len(test_set),0][i]
-    mse_open = mean_squared_error(test_actual.reshape(-1), test_predict_rescaled[0][i])
-    mse_open_list.append(mse_open)
-    
-    test_actual = test_set[60:len(test_set),1][i]
-    mse_close = mean_squared_error(test_actual.reshape(-1), test_predict_rescaled[1][i])
-    mse_close_list.append(mse_close)
-    
-    bid_value = test_predict_rescaled[1][i] - test_predict_rescaled[0][i]
-    bid_range.append(str(round(float(test_predict_rescaled[0][i]), 3)) +" + " + str(round(float(bid_value), 3)))
-    
+for i in range(len(output_close)):
+    trading_range.append(str(output_close[i].round(2)) + " - " + str(output_open[i].round(2)))
 
-actual_close_df = pd.DataFrame(test_set[60:len(test_set),1]).round(3)
-actual_open_df = pd.DataFrame(test_set[60:len(test_set),0]).round(3)
-predict_close_df = pd.DataFrame(test_predict_rescaled[1]).round(3)
-predict_open_df = pd.DataFrame(test_predict_rescaled[0]).round(3)
-bid_df = pd.DataFrame(bid_range)
-mse_open_df = pd.DataFrame(mse_open_list).round(3)
-mse_close_df = pd.DataFrame(mse_close_list).round(3)
+for i in range(len(actual_open)):
+    error = ((actual_open[i] - output_open[i])/actual_open[i])*100
+    error_open.append(error)
+    
+for i in range(len(actual_close)):
+    error = ((actual_close[i] - output_close[i])/actual_close[i])*100
+    error_close.append(error)
+    
+list1 = [abs(x) for x in error_close]
+list2 = [abs(x) for x in error_open]  
 
-combined_df = pd.concat([actual_open_df, predict_open_df, actual_close_df, \
-                         predict_close_df, bid_df, mse_open_df, \
-                         mse_close_df], axis = 1 )
-combined_df.columns = ['actual_open','predict_open', 'actual_close', \
-                       'predict_close', 'bid_value', 'open error', \
-                       'close error']
-combined_df.to_excel('./result/prediction_bid_result.xlsx', index = False)
-print("results saved to csv file")
+import operator
+list3 = list(map(operator.add, list1, list2)) 
+avg_error = [x/2 for x in list3]   
+
+date = pd.DataFrame(df_test['Date'])
+actual_close_df = pd.DataFrame(actual_close).round(3)
+actual_open_df = pd.DataFrame(actual_open).round(3)
+predict_close_df = pd.DataFrame(output_close).round(3)
+predict_open_df = pd.DataFrame(output_open).round(3)
+trade_df = pd.DataFrame(trading_range).round(3)
+avg_error_df = pd.DataFrame(avg_error).round(3)
+
+combined_df = pd.concat([date, actual_open_df, predict_open_df, actual_close_df, \
+                         predict_close_df, trade_df, avg_error_df], axis = 1 )
+combined_df.columns = ['date','actual_open','predict_open', 'actual_close', \
+                       'predict_close', 'trading_range', 'avg. error']
+combined_df.to_excel('./model/trading_model/result.xlsx', index = False)
 

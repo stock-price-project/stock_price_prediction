@@ -42,10 +42,7 @@ training_set = df_train.iloc[:, columns].values
 # Feature Scaling
 training_set_scaled = sc.transform(training_set)
 
-'''
-creating a data structure with 60 timestamp and predicting 1 output, later it is
-reshaped, resulting in 3D tensor
-'''
+
 X_train = []
 y_train = []
 for i in range(timestep, len(training_set_scaled)):
@@ -102,7 +99,7 @@ for i in range(no_of_feature):
         model = train.training(X_train[:, :, feature], y_train, feature.shape[0] , epochs)
         path_name = "./model/feature_importance_close" + "/" + str(count)
         
-        os.mkdir(path_name)
+        #os.mkdir(path_name)
         # Saving the model
         save_load.save_model(path_name, model)
         count = count + 1
@@ -136,5 +133,5 @@ for i in range(no_of_feature):
         results.loc[count] = [feature, model_accuracy_r2, model_accuracy_mse]
         count = count + 1
 
-results.to_excel("./result/feature_importance_close.xlsx")
+results.to_excel("./model/feature_importance_close/feature_importance_close.xlsx")
 
