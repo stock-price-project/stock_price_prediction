@@ -1,6 +1,6 @@
 ## Model Information
 
-* Input : Open, Close, Volume, Avg.
+* Input : Open, Close, Avg.
 * Output : Close
 * Optimizer : adam
 * Activation : tanh
@@ -9,12 +9,10 @@
 
 # for prediction of close price
 ### Train Score
-* r2 score = 0.997514
-* mse score = 191.477
+* r2 score = 0.99881
 
 ### Test Score
-* r2 score = 0.769922
-* mse score = 528.859
+* r2 score = 0.89664
 
 ## Output
 Test plot  

@@ -9,12 +9,10 @@
 
 # for prediction of open price
 ### Train Score
-* r2 score = 0.999436
-* mse score = 43.3748
+* r2 score = 0.99914
 
 ### Test Score
-* r2 score = 0.867536
-* mse score = 311.462
+* r2 score = 0.93537
 
 ## Output
 Test plot  

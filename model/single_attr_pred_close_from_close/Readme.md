@@ -9,12 +9,10 @@
 
 # for prediction of close price
 ### Train Score
-* r2 score = 0.996338
-* mse score = 0.000202
+* r2 score = 0.99623
 
 ### Test Score
-* r2 score = 0.668717
-* mse score = 0.000545
+* r2 score = 0.81173
 
 ## Output
 Test plot  
