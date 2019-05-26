@@ -42,8 +42,8 @@ reshaped, resulting in 3D tensor
 
 timestep = 60
 no_of_feature = 1
-input_col = [0]
-output_col = [0]
+input_col = [1]
+output_col = [1]
 
 X_train = []
 y_train = []
@@ -95,7 +95,7 @@ save_load.save_model(path_name, model)
 ###############################################################################
 
 # loading the model
-path_name = "./model/single_attr_pred_open_from_open"
+path_name = "./model/single_attr_pred_close_from_close"
 model = save_load.load_model(path_name)
 
 sc_output = MinMaxScaler(feature_range = (0,1))
@@ -111,8 +111,8 @@ train_actual = sc_output.inverse_transform(y_train)
 print('R2 Score : ', r2_score(train_actual, train_predict))
 print('MSE Score : ', mean_squared_error(train_actual, train_predict))
 
-plot.time_series_plot(train_actual, train_predict, 'red', 'blue', 'actual_open', \
-                 'predicted_open', 'days', 'price', 'Neural Network (single attribute - train data)')
+plot.time_series_plot(train_actual, train_predict, 'red', 'blue', 'actual_close', \
+                 'predicted_close', 'days', 'price', 'Neural Network (single attribute - train data)')
 
 
 pred_test_scaled = model.predict(X_test)
@@ -126,8 +126,8 @@ test_actual = sc_output.inverse_transform(y_test)
 print('R2 Score : ', r2_score(test_actual, test_predict))
 print('MSE Score : ', mean_squared_error(test_actual, test_predict))
 
-plot.time_series_plot(test_actual, test_predict, 'red', 'blue', 'actual_open', \
-                 'predicted_open', 'days', 'price', 'Neural Network (single attribute - test data)')
+plot.time_series_plot(test_actual, test_predict, 'red', 'blue', 'actual_close', \
+                 'predicted_close', 'days', 'price', 'Neural Network (single attribute - test data)')
 
 
 # plotting error
@@ -147,6 +147,6 @@ actual_price_df = pd.DataFrame(test_actual).round(3)
 predict_price_df = pd.DataFrame(test_predict).round(3)
 error_df = pd.DataFrame(error_list).round(3)
 combined_df = pd.concat([date, actual_price_df, predict_price_df, error_df], axis = 1 )
-combined_df.columns = ['date','actual_open', 'predicted_open', 'error_percent']
-combined_df.to_excel('./model/single_attr_pred_open_from_open/result.xlsx', index = False)
+combined_df.columns = ['date','actual_close', 'predicted_close', 'error_percent']
+combined_df.to_excel('./model/single_attr_pred_close_from_close/result.xlsx', index = False)
 

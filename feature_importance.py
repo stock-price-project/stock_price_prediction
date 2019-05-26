@@ -133,5 +133,5 @@ for i in range(no_of_feature):
         results.loc[count] = [feature, model_accuracy_r2, model_accuracy_mse]
         count = count + 1
 
-results.to_excel("./model/feature_importance_close/feature_importance_close.xlsx")
+results.to_excel("./model/feature_importance_close/result.xlsx")
 

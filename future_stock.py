@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from utils import save_load
+from utils import plot
 
 # loading training data
 df_train = pd.read_csv('./dataset/train.csv')
@@ -89,6 +90,8 @@ for i in range(timestep, timestep+prediction_days):
 output = sc.inverse_transform(np.array(output).reshape(-1,1))
 actual = np.array(y_test)
 
+plot.time_series_plot(y_test, output, 'red', 'blue', 'actual_close', \
+                 'predicted_close', 'days', 'price', 'Neural Network (multiple attributes - test data)')
 
 # plotting error
 error_list = []

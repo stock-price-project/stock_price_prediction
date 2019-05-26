@@ -22,9 +22,9 @@ df = pd.concat([df_train, df_test], axis=0)
 df = pd.concat([df, pd.DataFrame((df['High'] + df['Low'])/2, columns=['Avg.val'])], axis=1)
 
 columns = [1, 4, 6, 7]
-no_of_feature = 4
+no_of_feature = 3
 timestep = 80
-input_col = [0, 1, 2, 3]
+input_col = [0, 1, 3]
 output_col = [1]
 
 input_set = df.iloc[:, columns].values
@@ -131,7 +131,7 @@ print('R2 Score : ', r2_score(test_actual, test_predict))
 print('MSE Score : ', mean_squared_error(test_actual, test_predict))
 
 plot.time_series_plot(test_actual, test_predict, 'red', 'blue', 'actual_close', \
-                 'predicted_close', 'days', 'price', 'Neural Network (multiple attributes - test data)')
+                 'predicted_open', 'days', 'price', 'Neural Network (multiple attributes - test data)')
 
 # plotting error
 error_list = []

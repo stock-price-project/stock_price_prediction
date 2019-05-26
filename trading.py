@@ -24,10 +24,10 @@ df = pd.concat([df, pd.DataFrame((df['High'] + df['Low'])/2, columns=['Avg.val']
 
 columns = [1, 4, 6, 7]
 features_open = 3
-features_close = 4
+features_close = 3
 timestep = 80
 input_open = [1, 2, 3]
-input_close = [0, 1, 2, 3]
+input_close = [0, 1, 3]
 col_output_open = [0]
 col_output_close = [1]
 
@@ -94,8 +94,8 @@ actual_open = sc_output.inverse_transform(y_test_open)
 # analysis using opening price
 print('R2 Score : ', r2_score(actual_open, output_open))
 print('MSE Score : ', mean_squared_error(actual_open, output_open))
-plot.time_series_plot(actual_open, output_open, 'red', 'blue', 'actual', \
-                      'predicted', 'days', 'open price', 'Neural Network (trading)')    
+plot.time_series_plot(actual_open, output_open, 'red', 'blue', 'actual open', \
+                      'predicted open', 'days', 'open price', 'Neural Network (trading)')    
 
 # loading the model
 path_name_close = "./model/trading_model/close"
@@ -111,12 +111,12 @@ actual_close = sc_output.inverse_transform(y_test_close)
 # analysis using closing price 
 print('R2 Score : ', r2_score(actual_close, output_close))
 print('MSE Score : ', mean_squared_error(actual_close, output_close))
-plot.time_series_plot(actual_close, output_close, 'red', 'blue', 'actual', \
-                      'predicted', 'days', 'close price', 'Neural Network (trading)')  
+plot.time_series_plot(actual_close, output_close, 'red', 'blue', 'actual close', \
+                      'predicted close', 'days', 'close price', 'Neural Network (trading)')  
 
 
-plot.time_series_plot(output_open, output_close, 'red', 'blue', 'actual', \
-                      'predicted', 'days', 'price', 'Neural Network (trading)')  
+plot.time_series_plot(output_open, output_close, 'red', 'blue', 'predicted open', \
+                      'predicted close', 'days', 'price', 'Neural Network (trading)')  
 
 ###############################################################################
 
